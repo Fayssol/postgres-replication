@@ -13,29 +13,18 @@ bootstrap:
     ttl: 30
     loop_wait: 10
     retry_timeout: 10
-    maximum_lag_on_failover: 1048576
-    postgresql:
-      use_pg_rewind: true
-      use_slots: true
-      parameters:
-        wal_level: replica
-        hot_standby: "on"
-        max_wal_senders: 10
-        wal_keep_size: 128MB
-        max_replication_slots: 10
-        
+
   initdb:
   - encoding: UTF8
-  - data-checksums
 
   pg_hba:
-  - host replication replicator 0.0.0.0/0 md5
   - host all all 0.0.0.0/0 md5
 
 postgresql:
   listen: 0.0.0.0:5432
   connect_address: postgres3:5432
   data_dir: /var/lib/postgresql/data
+  bin_dir: /usr/lib/postgresql/16/bin
   
   authentication:
     replication:
@@ -44,9 +33,3 @@ postgresql:
     superuser:
       username: postgres
       password: postgres123
-
-  #callbacks:
-    #on_role_change: /scripts/notify.sh
-
-tags:
-  nofailover: false
