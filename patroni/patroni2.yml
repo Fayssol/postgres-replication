@@ -45,8 +45,8 @@ postgresql:
       username: postgres
       password: postgres123
 
-  callbacks:
-    on_role_change: /scripts/notify.sh
+  #callbacks:
+    #on_role_change: /scripts/notify.sh
 
 tags:
   nofailover: false
