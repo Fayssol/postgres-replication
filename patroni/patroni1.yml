@@ -33,3 +33,6 @@ postgresql:
     superuser:
       username: postgres
       password: postgres123
+tags:
+  nofailover: false
+  clonefrom: true      
