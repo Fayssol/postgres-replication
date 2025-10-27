@@ -5,10 +5,8 @@ restapi:
   listen: 0.0.0.0:8008
   connect_address: postgres1:8008
 
-etcd:
-  hosts: etcd:2379
-  protocol: http
-  api_version: v3
+consul:
+  host: consul:8500
 
 bootstrap:
   dcs:
@@ -25,7 +23,6 @@ bootstrap:
         max_wal_senders: 10
         wal_keep_size: 128MB
         max_replication_slots: 10
-        checkpoint_timeout: 30
         
   initdb:
   - encoding: UTF8
@@ -39,22 +36,17 @@ postgresql:
   listen: 0.0.0.0:5432
   connect_address: postgres1:5432
   data_dir: /var/lib/postgresql/data
-  bin_dir: /usr/lib/postgresql/16/bin
   
   authentication:
     replication:
       username: replicator
-      password: replicator_password
+      password: replicator123
     superuser:
       username: postgres
-      password: postgres_password
+      password: postgres123
 
-  # Callback pour les changements de rôle
   callbacks:
     on_role_change: /scripts/notify.sh
 
 tags:
   nofailover: false
-  noloadbalance: false
-  clonefrom: false
-  nosync: false

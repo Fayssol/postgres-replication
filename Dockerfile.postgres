@@ -6,8 +6,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Installer une version spécifique de Patroni
-RUN pip3 install --break-system-packages patroni[etcd]==3.0.0 psycopg2-binary
+RUN pip3 install --break-system-packages patroni[consul] psycopg2-binary
 
 RUN mkdir -p /scripts
 

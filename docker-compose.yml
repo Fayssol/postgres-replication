@@ -1,20 +1,8 @@
 services:
-  etcd:
-    image: quay.io/coreos/etcd:v3.5.0
-    container_name: etcd
-    environment:
-      - ETCDCTL_API=3
-    command: >
-      /usr/local/bin/etcd
-      --data-dir /etcd-data
-      --name etcd
-      --initial-advertise-peer-urls http://etcd:2380
-      --listen-peer-urls http://0.0.0.0:2380
-      --listen-client-urls http://0.0.0.0:2379
-      --advertise-client-urls http://etcd:2379
-      --initial-cluster etcd=http://etcd:2380
-      --initial-cluster-token etcd-cluster
-      --initial-cluster-state new
+  consul:
+    image: consul:1.15
+    container_name: consul
+    command: ["agent", "-dev", "-client=0.0.0.0"]
     networks:
       - postgres-cluster
 
@@ -31,10 +19,12 @@ services:
       - postgres_data1:/var/lib/postgresql/data
       - ./patroni/patroni1.yml:/etc/patroni.yml
       - ./scripts/notify.sh:/scripts/notify.sh
+    ports:
+      - "8008:8008"
     networks:
       - postgres-cluster
     depends_on:
-      - etcd
+      - consul
 
   postgres2:
     build:
@@ -49,10 +39,12 @@ services:
       - postgres_data2:/var/lib/postgresql/data
       - ./patroni/patroni2.yml:/etc/patroni.yml
       - ./scripts/notify.sh:/scripts/notify.sh
+    ports:
+      - "8009:8008"
     networks:
       - postgres-cluster
     depends_on:
-      - etcd
+      - consul
 
   postgres3:
     build:
@@ -67,10 +59,12 @@ services:
       - postgres_data3:/var/lib/postgresql/data
       - ./patroni/patroni3.yml:/etc/patroni.yml
       - ./scripts/notify.sh:/scripts/notify.sh
+    ports:
+      - "8010:8008"
     networks:
       - postgres-cluster
     depends_on:
-      - etcd
+      - consul
 
   haproxy:
     image: haproxy:2.8
