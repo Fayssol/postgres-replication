@@ -1,23 +1,15 @@
-# Recréer le Dockerfile simplifié et fonctionnel
-cat > Dockerfile.postgres << 'EOF'
 FROM postgres:16
 
-# Mise à jour et installation MINIMALE des dépendances
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Installation de Patroni seulement
 RUN pip3 install patroni[etcd] psycopg2-binary
 
-# Création des répertoires
 RUN mkdir -p /scripts
 
-# Ports
 EXPOSE 5432 8008
 
-# Commande
 CMD ["patroni", "/etc/patroni.yml"]
-EOF
