@@ -7,6 +7,8 @@ restapi:
 
 etcd:
   hosts: etcd:2379
+  protocol: http
+  api_version: v3
 
 bootstrap:
   dcs:
