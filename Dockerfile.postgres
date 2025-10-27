@@ -60,8 +60,8 @@ exec patroni /etc/patroni.yml' > /docker-entrypoint-initdb.d/patroni-init.sh \
 RUN chown -R postgres:postgres /scripts /var/log/patroni
 
 # Exposition des ports
-EXPOSE 5432  # PostgreSQL
-EXPOSE 8008  # API REST Patroni
+EXPOSE 5432
+EXPOSE 8008
 
 # Santé check
 HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 \
