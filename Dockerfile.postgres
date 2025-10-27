@@ -1,0 +1,71 @@
+FROM postgres:16
+
+# Mise à jour et installation des dépendances système
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-psycopg2 \
+    curl \
+    wget \
+    jq \
+    netcat \
+    vim \
+    less \
+    && rm -rf /var/lib/apt/lists/*
+
+# Installation de Patroni et dépendances Python
+RUN pip3 install --no-cache-dir \
+    patroni[etcd]==3.0.2 \
+    psycopg2-binary==2.9.7 \
+    python-consul==1.1.0 \
+    python-dateutil==2.8.2
+
+# Installation des extensions PostgreSQL supplémentaires
+RUN apt-get update && apt-get install -y \
+    postgresql-16-pgaudit \
+    postgresql-16-plpgsql-check \
+    postgresql-16-repack \
+    && rm -rf /var/lib/apt/lists/*
+
+# Création des répertoires nécessaires
+RUN mkdir -p /scripts /etc/patroni /var/log/patroni
+
+# Copie des configurations (optionnel - généralement montées via volumes)
+# COPY patroni/ /etc/patroni/
+# COPY scripts/ /scripts/
+
+# Script de santé pour les checks
+RUN echo '#!/bin/bash\n\
+# Health check pour Patroni\n\
+curl -s http://localhost:8008/health | grep -q "healthy"\n\
+exit $?' > /usr/local/bin/healthcheck.sh \
+    && chmod +x /usr/local/bin/healthcheck.sh
+
+# Script d'initialisation personnalisé
+RUN echo '#!/bin/bash\n\
+set -e\n\
+echo "Initializing PostgreSQL cluster with Patroni..."\n\
+\n\
+# Attendre que etcd soit disponible\n\
+until nc -z etcd 2379; do\n\
+  echo "Waiting for etcd..."\n\
+  sleep 2\n\
+done\n\
+\n\
+# Démarrer Patroni\n\
+exec patroni /etc/patroni.yml' > /docker-entrypoint-initdb.d/patroni-init.sh \
+    && chmod +x /docker-entrypoint-initdb.d/patroni-init.sh
+
+# Configuration des permissions
+RUN chown -R postgres:postgres /scripts /var/log/patroni
+
+# Exposition des ports
+EXPOSE 5432  # PostgreSQL
+EXPOSE 8008  # API REST Patroni
+
+# Santé check
+HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 \
+    CMD /usr/local/bin/healthcheck.sh
+
+# Commande par défaut - Patroni gère le démarrage de PostgreSQL
+CMD ["patroni", "/etc/patroni.yml"]
