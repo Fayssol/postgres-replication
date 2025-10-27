@@ -1,7 +1,23 @@
-version: '3.8'
-
 services:
-  # Node PostgreSQL 1 (Master potentiel)
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.0
+    container_name: etcd
+    environment:
+      - ETCDCTL_API=3
+    command: >
+      /usr/local/bin/etcd
+      --data-dir /etcd-data
+      --name etcd
+      --initial-advertise-peer-urls http://etcd:2380
+      --listen-peer-urls http://0.0.0.0:2380
+      --listen-client-urls http://0.0.0.0:2379
+      --advertise-client-urls http://etcd:2379
+      --initial-cluster etcd=http://etcd:2380
+      --initial-cluster-token etcd-cluster
+      --initial-cluster-state new
+    networks:
+      - postgres-cluster
+
   postgres1:
     build: 
       context: .
@@ -17,8 +33,9 @@ services:
       - ./scripts/notify.sh:/scripts/notify.sh
     networks:
       - postgres-cluster
+    depends_on:
+      - etcd
 
-  # Node PostgreSQL 2 (Standby)
   postgres2:
     build:
       context: .
@@ -34,8 +51,9 @@ services:
       - ./scripts/notify.sh:/scripts/notify.sh
     networks:
       - postgres-cluster
+    depends_on:
+      - etcd
 
-  # Node PostgreSQL 3 (Standby)
   postgres3:
     build:
       context: .
@@ -51,8 +69,9 @@ services:
       - ./scripts/notify.sh:/scripts/notify.sh
     networks:
       - postgres-cluster
+    depends_on:
+      - etcd
 
-  # HAProxy pour le load balancing
   haproxy:
     image: haproxy:2.8
     container_name: haproxy-lb
@@ -67,29 +86,6 @@ services:
       - postgres1
       - postgres2
       - postgres3
-
-  # Etcd pour la coordination (requis par Patroni)
-  etcd:
-    image: quay.io/coreos/etcd:v3.5.0
-    container_name: etcd
-    environment:
-      - ETCDCTL_API=3
-      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
-      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
-      - ETCD_INITIAL_CLUSTER=etcd=http://etcd:2380
-    command: >
-      /usr/local/bin/etcd
-      --data-dir /etcd-data
-      --name etcd
-      --initial-advertise-peer-urls http://etcd:2380
-      --listen-peer-urls http://0.0.0.0:2380
-      --listen-client-urls http://0.0.0.0:2379
-      --advertise-client-urls http://etcd:2379
-      --initial-cluster-token etcd-cluster
-      --initial-cluster etcd=http://etcd:2380
-      --initial-cluster-state new
-    networks:
-      - postgres-cluster
 
 volumes:
   postgres_data1:
