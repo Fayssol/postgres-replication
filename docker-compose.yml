@@ -12,7 +12,9 @@ services:
       - ETCD_INITIAL_CLUSTER=etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
       - ETCD_INITIAL_CLUSTER_STATE=new
       - ETCD_ENABLE_V2=true
-    networks: [pnet]
+    networks:
+      pnet:
+        ipv4_address: 172.18.0.2
 
   etcd2:
     image: openeuler/etcd:3.6.4-oe2403sp1
@@ -25,7 +27,9 @@ services:
       - ETCD_INITIAL_CLUSTER=etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
       - ETCD_INITIAL_CLUSTER_STATE=new
       - ETCD_ENABLE_V2=true
-    networks: [pnet]
+    networks:
+      pnet:
+        ipv4_address: 172.18.0.3
 
   etcd3:
     image: openeuler/etcd:3.6.4-oe2403sp1
@@ -38,10 +42,16 @@ services:
       - ETCD_INITIAL_CLUSTER=etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
       - ETCD_INITIAL_CLUSTER_STATE=new
       - ETCD_ENABLE_V2=true
-    networks: [pnet]
+    networks:
+      pnet:
+        ipv4_address: 172.18.0.4
 
   # --- Patroni / Postgres nodes ---
   patroni1:
+    extra_hosts:
+      - "etcd1:172.18.0.2"
+      - "etcd2:172.18.0.3"
+      - "etcd3:172.18.0.4"
     image: d2cio/patroni:latest
     depends_on: [etcd1,etcd2,etcd3]
     volumes:
@@ -56,6 +66,10 @@ services:
       - "54321:5432"   # expose for testing (pg1)
 
   patroni2:
+    extra_hosts:
+      - "etcd1:172.18.0.2"
+      - "etcd2:172.18.0.3"
+      - "etcd3:172.18.0.4"
     image: d2cio/patroni:latest
     depends_on: [etcd1,etcd2,etcd3]
     volumes:
@@ -70,6 +84,10 @@ services:
       - "54322:5432"
 
   patroni3:
+    extra_hosts:
+      - "etcd1:172.18.0.2"
+      - "etcd2:172.18.0.3"
+      - "etcd3:172.18.0.4"
     image: d2cio/patroni:latest
     depends_on: [etcd1,etcd2,etcd3]
     volumes:
@@ -95,3 +113,6 @@ services:
 networks:
   pnet:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.0.0/16
