@@ -11,6 +11,7 @@ services:
       - ETCD_ADVERTISE_CLIENT_URLS=http://etcd1:2379
       - ETCD_INITIAL_CLUSTER=etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
       - ETCD_INITIAL_CLUSTER_STATE=new
+      - ETCD_ENABLE_V2=true
     networks: [pnet]
 
   etcd2:
@@ -23,6 +24,7 @@ services:
       - ETCD_ADVERTISE_CLIENT_URLS=http://etcd2:2379
       - ETCD_INITIAL_CLUSTER=etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
       - ETCD_INITIAL_CLUSTER_STATE=new
+      - ETCD_ENABLE_V2=true
     networks: [pnet]
 
   etcd3:
@@ -35,6 +37,7 @@ services:
       - ETCD_ADVERTISE_CLIENT_URLS=http://etcd3:2379
       - ETCD_INITIAL_CLUSTER=etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
       - ETCD_INITIAL_CLUSTER_STATE=new
+      - ETCD_ENABLE_V2=true
     networks: [pnet]
 
   # --- Patroni / Postgres nodes ---
@@ -47,6 +50,7 @@ services:
       - ./wal-archive:/var/lib/postgresql/wal_archive
     environment:
       - PATRONI_NAME=pg1
+      - PATRONI_ETCD_HOST=http://etcd1:2379,http://etcd2:2379,http://etcd3:2379
     networks: [pnet]
     ports:
       - "54321:5432"   # expose for testing (pg1)
@@ -60,6 +64,7 @@ services:
       - ./wal-archive:/var/lib/postgresql/wal_archive
     environment:
       - PATRONI_NAME=pg2
+      - PATRONI_ETCD_HOST=http://etcd1:2379,http://etcd2:2379,http://etcd3:2379
     networks: [pnet]
     ports:
       - "54322:5432"
@@ -73,6 +78,7 @@ services:
       - ./wal-archive:/var/lib/postgresql/wal_archive
     environment:
       - PATRONI_NAME=pg3
+      - PATRONI_ETCD_HOST=http://etcd1:2379,http://etcd2:2379,http://etcd3:2379
     networks: [pnet]
     ports:
       - "54323:5432"
