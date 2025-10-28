@@ -1,91 +1,91 @@
 services:
-  consul:
-    image: consul:1.15
-    container_name: consul
-    command: ["agent", "-dev", "-client=0.0.0.0"]
-    networks:
-      - postgres-cluster
 
-  postgres1:
-    build: 
-      context: .
-      dockerfile: Dockerfile.postgres
-    container_name: postgres-node1
+  # --- etcd cluster (3 nodes) ---
+  etcd1:
+    image: bitnami/etcd:latest
     environment:
-      - PATRONI_NAME=postgres1
-      - PATRONI_RESTAPI_CONNECT_ADDRESS=postgres1:8008
-      - PATRONI_POSTGRESQL_CONNECT_ADDRESS=postgres1:5432
-    volumes:
-      - postgres_data1:/var/lib/postgresql/data
-      - ./patroni/patroni1.yml:/etc/patroni.yml
-      - ./scripts/notify.sh:/scripts/notify.sh
-    ports:
-      - "8008:8008"
-    networks:
-      - postgres-cluster
-    depends_on:
-      - consul
+      - ETCD_NAME=etcd1
+      - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
+      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+      - ETCD_INITIAL_ADVERTISE_PEER_URLS=http://etcd1:2380
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd1:2379
+      - ETCD_INITIAL_CLUSTER=etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
+      - ETCD_INITIAL_CLUSTER_STATE=new
+    networks: [pnet]
 
-  postgres2:
-    build:
-      context: .
-      dockerfile: Dockerfile.postgres
-    container_name: postgres-node2
+  etcd2:
+    image: bitnami/etcd:latest
     environment:
-      - PATRONI_NAME=postgres2
-      - PATRONI_RESTAPI_CONNECT_ADDRESS=postgres2:8008
-      - PATRONI_POSTGRESQL_CONNECT_ADDRESS=postgres2:5432
-    volumes:
-      - postgres_data2:/var/lib/postgresql/data
-      - ./patroni/patroni2.yml:/etc/patroni.yml
-      - ./scripts/notify.sh:/scripts/notify.sh
-    ports:
-      - "8009:8008"
-    networks:
-      - postgres-cluster
-    depends_on:
-      - consul
+      - ETCD_NAME=etcd2
+      - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
+      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+      - ETCD_INITIAL_ADVERTISE_PEER_URLS=http://etcd2:2380
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd2:2379
+      - ETCD_INITIAL_CLUSTER=etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
+      - ETCD_INITIAL_CLUSTER_STATE=new
+    networks: [pnet]
 
-  postgres3:
-    build:
-      context: .
-      dockerfile: Dockerfile.postgres
-    container_name: postgres-node3
+  etcd3:
+    image: bitnami/etcd:latest
     environment:
-      - PATRONI_NAME=postgres3
-      - PATRONI_RESTAPI_CONNECT_ADDRESS=postgres3:8008
-      - PATRONI_POSTGRESQL_CONNECT_ADDRESS=postgres3:5432
-    volumes:
-      - postgres_data3:/var/lib/postgresql/data
-      - ./patroni/patroni3.yml:/etc/patroni.yml
-      - ./scripts/notify.sh:/scripts/notify.sh
-    ports:
-      - "8010:8008"
-    networks:
-      - postgres-cluster
-    depends_on:
-      - consul
+      - ETCD_NAME=etcd3
+      - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
+      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+      - ETCD_INITIAL_ADVERTISE_PEER_URLS=http://etcd3:2380
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd3:2379
+      - ETCD_INITIAL_CLUSTER=etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
+      - ETCD_INITIAL_CLUSTER_STATE=new
+    networks: [pnet]
 
+  # --- Patroni / Postgres nodes ---
+  patroni1:
+    image: zalando/patroni:latest
+    depends_on: [etcd1,etcd2,etcd3]
+    volumes:
+      - ./configs/patroni1.yml:/etc/patroni/patroni.yml:ro
+      - ./data/patroni1:/var/lib/postgresql/data
+      - ./wal-archive:/var/lib/postgresql/wal_archive
+    environment:
+      - PATRONI_NAME=pg1
+    networks: [pnet]
+    ports:
+      - "54321:5432"   # expose for testing (pg1)
+
+  patroni2:
+    image: zalando/patroni:latest
+    depends_on: [etcd1,etcd2,etcd3]
+    volumes:
+      - ./configs/patroni2.yml:/etc/patroni/patroni.yml:ro
+      - ./data/patroni2:/var/lib/postgresql/data
+      - ./wal-archive:/var/lib/postgresql/wal_archive
+    environment:
+      - PATRONI_NAME=pg2
+    networks: [pnet]
+    ports:
+      - "54322:5432"
+
+  patroni3:
+    image: zalando/patroni:latest
+    depends_on: [etcd1,etcd2,etcd3]
+    volumes:
+      - ./configs/patroni3.yml:/etc/patroni/patroni.yml:ro
+      - ./data/patroni3:/var/lib/postgresql/data
+      - ./wal-archive:/var/lib/postgresql/wal_archive
+    environment:
+      - PATRONI_NAME=pg3
+    networks: [pnet]
+    ports:
+      - "54323:5432"
+
+  # --- HAProxy for client connections ---
   haproxy:
-    image: haproxy:2.8
-    container_name: haproxy-lb
+    image: haproxy:latest
+    volumes:
+      - ./configs/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    networks: [pnet]
     ports:
       - "5432:5432"
-      - "7000:7000"
-    volumes:
-      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
-    networks:
-      - postgres-cluster
-    depends_on:
-      - postgres1
-      - postgres2
-      - postgres3
-
-volumes:
-  postgres_data1:
-  postgres_data2:
-  postgres_data3:
 
 networks:
-  postgres-cluster:
+  pnet:
     driver: bridge
