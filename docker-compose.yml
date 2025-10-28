@@ -2,7 +2,7 @@ services:
 
   # --- etcd cluster (3 nodes) ---
   etcd1:
-    image: bitnami/etcd:latest
+    image: quay.io/coreos/etcd:latest
     environment:
       - ETCD_NAME=etcd1
       - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
@@ -14,7 +14,7 @@ services:
     networks: [pnet]
 
   etcd2:
-    image: bitnami/etcd:latest
+    image: quay.io/coreos/etcd:latest
     environment:
       - ETCD_NAME=etcd2
       - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
@@ -26,7 +26,7 @@ services:
     networks: [pnet]
 
   etcd3:
-    image: bitnami/etcd:latest
+    image: quay.io/coreos/etcd:latest
     environment:
       - ETCD_NAME=etcd3
       - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
@@ -39,7 +39,7 @@ services:
 
   # --- Patroni / Postgres nodes ---
   patroni1:
-    image: zalando/patroni:latest
+    image: ghcr.io/zalando/patroni:latest
     depends_on: [etcd1,etcd2,etcd3]
     volumes:
       - ./configs/patroni1.yml:/etc/patroni/patroni.yml:ro
@@ -52,7 +52,7 @@ services:
       - "54321:5432"   # expose for testing (pg1)
 
   patroni2:
-    image: zalando/patroni:latest
+    image: ghcr.io/zalando/patroni:latest
     depends_on: [etcd1,etcd2,etcd3]
     volumes:
       - ./configs/patroni2.yml:/etc/patroni/patroni.yml:ro
@@ -65,7 +65,7 @@ services:
       - "54322:5432"
 
   patroni3:
-    image: zalando/patroni:latest
+    image: ghcr.io/zalando/patroni:latest
     depends_on: [etcd1,etcd2,etcd3]
     volumes:
       - ./configs/patroni3.yml:/etc/patroni/patroni.yml:ro
