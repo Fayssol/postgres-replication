@@ -39,7 +39,7 @@ services:
 
   # --- Patroni / Postgres nodes ---
   patroni1:
-    image: registry.opensource.zalan.do/acid/patroni
+    image: d2cio/patroni:latest
     depends_on: [etcd1,etcd2,etcd3]
     volumes:
       - ./configs/patroni1.yml:/etc/patroni/patroni.yml:ro
@@ -52,7 +52,7 @@ services:
       - "54321:5432"   # expose for testing (pg1)
 
   patroni2:
-    image: registry.opensource.zalan.do/acid/patroni
+    image: d2cio/patroni:latest
     depends_on: [etcd1,etcd2,etcd3]
     volumes:
       - ./configs/patroni2.yml:/etc/patroni/patroni.yml:ro
@@ -65,7 +65,7 @@ services:
       - "54322:5432"
 
   patroni3:
-    image: registry.opensource.zalan.do/acid/patroni
+    image: d2cio/patroni:latest
     depends_on: [etcd1,etcd2,etcd3]
     volumes:
       - ./configs/patroni3.yml:/etc/patroni/patroni.yml:ro
