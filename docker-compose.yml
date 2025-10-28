@@ -2,7 +2,7 @@ services:
 
   # --- etcd cluster (3 nodes) ---
   etcd1:
-    image: bitnami/etcd:3.5
+    image: bitnami/etcd:latest
     environment:
       - ETCD_NAME=etcd1
       - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
@@ -14,7 +14,7 @@ services:
     networks: [pnet]
 
   etcd2:
-    image: bitnami/etcd:3.5
+    image: bitnami/etcd:latest
     environment:
       - ETCD_NAME=etcd2
       - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
@@ -26,7 +26,7 @@ services:
     networks: [pnet]
 
   etcd3:
-    image: bitnami/etcd:3.5
+    image: bitnami/etcd:latest
     environment:
       - ETCD_NAME=etcd3
       - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
