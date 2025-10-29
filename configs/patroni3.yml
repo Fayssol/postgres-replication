@@ -5,7 +5,7 @@ name: pg3
 restapi:
   listen: 0.0.0.0:8008
   connect_address: patroni3-container:8008
-etcd:
+etcd3:
   host: "etcd3:2379"
 bootstrap:
   dcs:

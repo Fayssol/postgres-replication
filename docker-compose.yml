@@ -12,7 +12,6 @@ services:
       - ETCD_ADVERTISE_CLIENT_URLS=http://etcd1:2379
       - ETCD_INITIAL_CLUSTER=etcd1=http://172.18.0.2:2380,etcd2=http://172.18.0.3:2380,etcd3=http://172.18.0.4:2380
       - ETCD_INITIAL_CLUSTER_STATE=new
-      - ETCD_ENABLE_V2=true
     networks:
       pnet:
         ipv4_address: 172.18.0.2
@@ -28,7 +27,6 @@ services:
       - ETCD_ADVERTISE_CLIENT_URLS=http://etcd2:2379
       - ETCD_INITIAL_CLUSTER=etcd1=http://172.18.0.2:2380,etcd2=http://172.18.0.3:2380,etcd3=http://172.18.0.4:2380
       - ETCD_INITIAL_CLUSTER_STATE=new
-      - ETCD_ENABLE_V2=true
     networks:
       pnet:
         ipv4_address: 172.18.0.3
@@ -44,7 +42,6 @@ services:
       - ETCD_ADVERTISE_CLIENT_URLS=http://etcd3:2379
       - ETCD_INITIAL_CLUSTER=etcd1=http://172.18.0.2:2380,etcd2=http://172.18.0.3:2380,etcd3=http://172.18.0.4:2380
       - ETCD_INITIAL_CLUSTER_STATE=new
-      - ETCD_ENABLE_V2=true
     networks:
       pnet:
         ipv4_address: 172.18.0.4

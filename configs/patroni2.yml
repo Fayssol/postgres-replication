@@ -6,7 +6,7 @@ restapi:
   listen: 0.0.0.0:8008
   connect_address: patroni2-container:8008   # à adapter si tu veux exposer
 
-etcd:
+etcd3:
   hosts: "etcd1-container:2379,etcd2-container:2379,etcd3-container:2379"
 bootstrap:
   dcs:
