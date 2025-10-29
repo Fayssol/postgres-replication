@@ -3,6 +3,7 @@ services:
   # --- etcd cluster (3 nodes) ---
   etcd1:
     image: openeuler/etcd:3.6.4-oe2403sp1
+    container_name: etcd1-container
     environment:
       - ETCD_NAME=etcd1
       - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
@@ -18,6 +19,7 @@ services:
 
   etcd2:
     image: openeuler/etcd:3.6.4-oe2403sp1
+    container_name: etcd2-container
     environment:
       - ETCD_NAME=etcd2
       - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
@@ -33,6 +35,7 @@ services:
 
   etcd3:
     image: openeuler/etcd:3.6.4-oe2403sp1
+    container_name: etcd3-container
     environment:
       - ETCD_NAME=etcd3
       - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
@@ -53,6 +56,7 @@ services:
       - "etcd2:172.18.0.3"
       - "etcd3:172.18.0.4"
     image: d2cio/patroni:latest
+    container_name: patroni1-container
     depends_on: [etcd1,etcd2,etcd3]
     volumes:
       - ./configs/patroni1.yml:/etc/patroni/patroni.yml:ro
@@ -60,7 +64,7 @@ services:
       - ./wal-archive:/var/lib/postgresql/wal_archive
     environment:
       - PATRONI_NAME=pg1
-      - PATRONI_ETCD_HOST=http://172.18.0.2:2379,http://172.18.0.3:2379,http://172.18.0.4:2379
+      - PATRONI_ETCD_HOST=http://etcd1:2379,http://etcd2:2379,http://etcd3:2379
     networks: [pnet]
     ports:
       - "54321:5432"   # expose for testing (pg1)
@@ -71,6 +75,7 @@ services:
       - "etcd2:172.18.0.3"
       - "etcd3:172.18.0.4"
     image: d2cio/patroni:latest
+    container_name: patroni2-container
     depends_on: [etcd1,etcd2,etcd3]
     volumes:
       - ./configs/patroni2.yml:/etc/patroni/patroni.yml:ro
@@ -78,7 +83,7 @@ services:
       - ./wal-archive:/var/lib/postgresql/wal_archive
     environment:
       - PATRONI_NAME=pg2
-      - PATRONI_ETCD_HOST=http://172.18.0.2:2379,http://172.18.0.3:2379,http://172.18.0.4:2379
+      - PATRONI_ETCD_HOST=http://etcd1:2379,http://etcd2:2379,http://etcd3:2379
     networks: [pnet]
     ports:
       - "54322:5432"
@@ -89,6 +94,7 @@ services:
       - "etcd2:172.18.0.3"
       - "etcd3:172.18.0.4"
     image: d2cio/patroni:latest
+    container_name: patroni3-container
     depends_on: [etcd1,etcd2,etcd3]
     volumes:
       - ./configs/patroni3.yml:/etc/patroni/patroni.yml:ro
@@ -96,7 +102,7 @@ services:
       - ./wal-archive:/var/lib/postgresql/wal_archive
     environment:
       - PATRONI_NAME=pg3
-      - PATRONI_ETCD_HOST=http://172.18.0.2:2379,http://172.18.0.3:2379,http://172.18.0.4:2379
+      - PATRONI_ETCD_HOST=http://etcd1:2379,http://etcd2:2379,http://etcd3:2379
     networks: [pnet]
     ports:
       - "54323:5432"
@@ -104,6 +110,8 @@ services:
   # --- HAProxy for client connections ---
   haproxy:
     image: haproxy:latest
+    container_name: haproxy-container
+    depends_on: [patroni1,patroni2,patroni3]
     volumes:
       - ./configs/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
     networks: [pnet]
