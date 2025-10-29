@@ -7,7 +7,7 @@ restapi:
   connect_address: patroni2-container:8008   # à adapter si tu veux exposer
 
 etcd:
-  host: "etcd1-container:2379,etcd2-container:2379,etcd3-container:2379"
+  hosts: "etcd1-container:2379,etcd2-container:2379,etcd3-container:2379"
 bootstrap:
   dcs:
     ttl: 30
