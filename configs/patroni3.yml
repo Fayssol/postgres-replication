@@ -6,7 +6,7 @@ restapi:
   listen: 0.0.0.0:8008
   connect_address: patroni3-container:8008
 etcd:
-  host: "http://etcd1-container:2379,http://etcd2-container:2379,http://etcd3-container:2379"
+  host: "etcd3:2379"
 bootstrap:
   dcs:
     ttl: 30
