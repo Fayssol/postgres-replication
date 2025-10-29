@@ -60,7 +60,6 @@ services:
       - ./wal-archive:/var/lib/postgresql/wal_archive
     environment:
       - PATRONI_NAME=pg1
-      - PATRONI_ETCD_HOST=http://etcd1-container:2379,http://etcd2-container:2379,http://etcd3-container:2379
       - PATRONI_LOG=/var/lib/postgresql/data/patroni1/patroni.log
     networks:
       pnet:
@@ -79,7 +78,6 @@ services:
       - ./wal-archive:/var/lib/postgresql/wal_archive
     environment:
       - PATRONI_NAME=pg2
-      - PATRONI_ETCD_HOST=http://etcd1-container:2379,http://etcd2-container:2379,http://etcd3-container:2379
       - PATRONI_LOG=/var/lib/postgresql/data/patroni2/patroni.log
     networks:
       pnet:
@@ -98,7 +96,6 @@ services:
       - ./wal-archive:/var/lib/postgresql/wal_archive
     environment:
       - PATRONI_NAME=pg3
-      - PATRONI_ETCD_HOST=http://etcd1-container:2379,http://etcd2-container:2379,http://etcd3-container:2379
       - PATRONI_LOG=/var/lib/postgresql/data/patroni3/patroni.log
     networks:
       pnet:
