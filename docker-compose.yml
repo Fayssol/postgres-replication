@@ -51,10 +51,6 @@ services:
 
   # --- Patroni / Postgres nodes ---
   patroni1:
-    extra_hosts:
-      - "etcd1:172.18.0.2"
-      - "etcd2:172.18.0.3"
-      - "etcd3:172.18.0.4"
     image: d2cio/patroni:latest
     container_name: patroni1-container
     depends_on: [etcd1,etcd2,etcd3]
@@ -71,10 +67,6 @@ services:
       - "54321:5432"   # expose for testing (pg1)
 
   patroni2:
-    extra_hosts:
-      - "etcd1:172.18.0.2"
-      - "etcd2:172.18.0.3"
-      - "etcd3:172.18.0.4"
     image: d2cio/patroni:latest
     container_name: patroni2-container
     depends_on: [etcd1,etcd2,etcd3]
@@ -91,10 +83,6 @@ services:
       - "54322:5432"
 
   patroni3:
-    extra_hosts:
-      - "etcd1:172.18.0.2"
-      - "etcd2:172.18.0.3"
-      - "etcd3:172.18.0.4"
     image: d2cio/patroni:latest
     container_name: patroni3-container
     depends_on: [etcd1,etcd2,etcd3]
