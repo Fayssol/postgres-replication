@@ -6,5 +6,5 @@ FROM d2cio/patroni:latest
 #RUN apt-get update && apt-get install -y python3-etcd
 # OU si vous utilisez pip :
 # RUN pip install python-etcd
-
+RUN apt-get update && apt-get install -y python3-pip && rm -rf /var/lib/apt/lists/*
 RUN pip install patroni[etcd3]
