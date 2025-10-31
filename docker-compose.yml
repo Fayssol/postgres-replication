@@ -48,7 +48,7 @@ services:
 
   # --- Patroni / Postgres nodes ---
   patroni1:
-    image: kahidna/postgresql-patroni-etcd:14-3.3
+    image: faryon93/patroni:3.2.0
     container_name: patroni1-container
     depends_on: [etcd1,etcd2,etcd3]
     volumes:
@@ -66,7 +66,7 @@ services:
       - "54321:5432"   # expose for testing (pg1)
 
   patroni2:
-    image: kahidna/postgresql-patroni-etcd:14-3.3
+    image: faryon93/patroni:3.2.0
     container_name: patroni2-container
     depends_on: [etcd1,etcd2,etcd3]
     volumes:
@@ -84,7 +84,7 @@ services:
       - "54322:5432"
 
   patroni3:
-    image: kahidna/postgresql-patroni-etcd:14-3.3
+    image: faryon93/patroni:3.2.0
     container_name: patroni3-container
     depends_on: [etcd1,etcd2,etcd3]
     volumes:
