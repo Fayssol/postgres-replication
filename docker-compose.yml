@@ -53,8 +53,8 @@ services:
     depends_on: [etcd1,etcd2,etcd3]
     volumes:
       - ./configs/patroni1.yml:/etc/patroni/patroni.yml:ro
-      - ./data/patroni1:/var/lib/postgresql/data
-      - ./wal-archive:/var/lib/postgresql/wal_archive
+      - ./data/patroni1:/var/lib/postgresql/data:rw
+      - ./wal-archive:/var/lib/postgresql/wal_archive:rw
     environment:
       - PATRONI_NAME=pg1
       - PATRONI_LOG=/var/lib/postgresql/data/patroni1/patroni.log
@@ -71,8 +71,8 @@ services:
     depends_on: [etcd1,etcd2,etcd3]
     volumes:
       - ./configs/patroni2.yml:/etc/patroni/patroni.yml:ro
-      - ./data/patroni2:/var/lib/postgresql/data
-      - ./wal-archive:/var/lib/postgresql/wal_archive
+      - ./data/patroni2:/var/lib/postgresql/data:rw
+      - ./wal-archive:/var/lib/postgresql/wal_archive:rw
     environment:
       - PATRONI_NAME=pg2
       - PATRONI_LOG=/var/lib/postgresql/data/patroni2/patroni.log
@@ -89,8 +89,8 @@ services:
     depends_on: [etcd1,etcd2,etcd3]
     volumes:
       - ./configs/patroni3.yml:/etc/patroni/patroni.yml:ro
-      - ./data/patroni3:/var/lib/postgresql/data
-      - ./wal-archive:/var/lib/postgresql/wal_archive
+      - ./data/patroni3:/var/lib/postgresql/data:rw
+      - ./wal-archive:/var/lib/postgresql/wal_archive:rw
     environment:
       - PATRONI_NAME=pg3
       - PATRONI_LOG=/var/lib/postgresql/data/patroni3/patroni.log
