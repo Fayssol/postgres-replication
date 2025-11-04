@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-dev \
     build-essential \
+    sudo \
     && rm -rf /var/lib/apt/lists/*
 
 # Ajouter le dépôt PostgreSQL
@@ -62,7 +63,7 @@ RUN chown -R postgres:postgres /var/lib/postgresql \
     && chown -R postgres:postgres /var/run/postgresql \
     && chown -R postgres:postgres /var/log/patroni
 
-# Installer pg_rewind et autres outils
+# Installer outils supplémentaires
 RUN apt-get update && apt-get install -y \
     psmisc \
     vim \
@@ -78,14 +79,15 @@ pg_isready -U postgres -h 127.0.0.1 -p 5432\n\
 exit $?' > /usr/local/bin/healthcheck.sh \
     && chmod +x /usr/local/bin/healthcheck.sh
 
-# Script d'initialisation personnalisé
+# Script d'initialisation corrigé - PLUS de 'su'
 RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
 # Initialiser le cluster PostgreSQL si nécessaire\n\
 if [ ! -f /var/lib/postgresql/data/postgresql.conf ]; then\n\
     echo "Initializing PostgreSQL cluster..."\n\
-    su - postgres -c "/usr/lib/postgresql/${PG_VERSION}/bin/initdb -D /var/lib/postgresql/data --encoding=UTF8 --data-checksums"\n\
+    # Utiliser directement l'\''utilisateur postgres sans su\n\
+    /usr/lib/postgresql/${PG_VERSION}/bin/initdb -D /var/lib/postgresql/data --encoding=UTF8 --data-checksums\n\
 fi\n\
 \n\
 # Démarrer Patroni\n\
