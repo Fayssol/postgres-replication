@@ -1,7 +1,7 @@
 scope: mycluster
 namespace: /service/
 name: pg2
-
+##
 restapi:
   listen: 0.0.0.0:8008
   connect_address: patroni2:8008
