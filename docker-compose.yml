@@ -58,13 +58,7 @@ services:
     environment:
       - PATRONI_NAME=pg1
       - PATRONI_LOG=/var/lib/postgresql/data/patroni1/patroni.log
-    command: >
-      bash -c "
-        pg_ctl -D /var/lib/postgresql/data initdb &&
-        echo 'host replication replicator 0.0.0.0/0 md5' >> /var/lib/postgresql/data/pg_hba.conf &&
-        echo 'local replication replicator trust' >> /var/lib/postgresql/data/pg_hba.conf &&
-        echo 'Database initialized successfully'
-      "
+    command: patroni /etc/patroni.yml
     networks:
       pnet:
         aliases:
@@ -83,7 +77,7 @@ services:
     environment:
       - PATRONI_NAME=pg2
       - PATRONI_LOG=/var/lib/postgresql/data/patroni2/patroni.log
-    command: "patroni /etc/patroni.yml"
+    command: patroni /etc/patroni.yml
     networks:
       pnet:
         aliases:
@@ -102,7 +96,7 @@ services:
     environment:
       - PATRONI_NAME=pg3
       - PATRONI_LOG=/var/lib/postgresql/data/patroni3/patroni.log
-    command: "patroni /etc/patroni.yml"
+    command: patroni /etc/patroni.yml
     networks:
       pnet:
         aliases:
