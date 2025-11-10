@@ -1,46 +1,16 @@
 scope: mycluster
 namespace: /service/
 name: pg3
-##
+
 restapi:
-  listen: 0.0.0.0:8008
+  listen: 0.0.0.0:8008  # CHANGER le port
   connect_address: patroni3:8008
 
-etcd3:
+etcd:
   hosts: "etcd1:2379,etcd2:2379,etcd3:2379"
   protocol: http
 
-bootstrap:
-  dcs:
-    ttl: 30
-    loop_wait: 10
-    retry_timeout: 10
-    maximum_lag_on_failover: 1048576
-    postgresql:
-      use_pg_rewind: true
-      use_slots: true
-      parameters:
-        wal_level: replica
-        hot_standby: on
-        wal_log_hints: on
-        max_wal_senders: 10
-        max_replication_slots: 10
-        archive_mode: on
-        archive_command: 'test ! -f /var/lib/postgresql/wal_archive/%f && cp %p /var/lib/postgresql/wal_archive/%f'
-        wal_keep_size: 64
-        hot_standby_feedback: on
-  initdb:
-    - encoding: UTF8
-    - data-checksums
-  users:
-    replicator:
-      password: repl_password
-      options:
-        - replication
-    postgres:
-      password: postgres_password
-      options:
-        - superuser
+# SUPPRIMER TOUTE LA SECTION bootstrap
 
 postgresql:
   listen: 0.0.0.0:5432

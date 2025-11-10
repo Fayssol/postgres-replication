@@ -58,12 +58,13 @@ services:
     environment:
       - PATRONI_NAME=pg1
       - PATRONI_LOG=/var/lib/postgresql/data/patroni1/patroni.log
+    command: patroni /etc/patroni.yml
     networks:
       pnet:
         aliases:
           - patroni1
     ports:
-      - "54321:5432"   # expose for testing (pg1)
+      - "5433:5432"
 
   patroni2:
     image: my-patroni-custom
@@ -76,12 +77,13 @@ services:
     environment:
       - PATRONI_NAME=pg2
       - PATRONI_LOG=/var/lib/postgresql/data/patroni2/patroni.log
+    command: patroni /etc/patroni.yml
     networks:
       pnet:
         aliases:
           - patroni2
     ports:
-      - "54322:5432"
+      - "5434:5432"
 
   patroni3:
     image: my-patroni-custom
@@ -94,12 +96,13 @@ services:
     environment:
       - PATRONI_NAME=pg3
       - PATRONI_LOG=/var/lib/postgresql/data/patroni3/patroni.log
+    command: patroni /etc/patroni.yml
     networks:
       pnet:
         aliases:
           - patroni3
     ports:
-      - "54323:5432"
+      - "5435:5432" 
 
   # --- HAProxy for client connections ---
   haproxy:
@@ -110,7 +113,7 @@ services:
       - ./configs/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
     networks: [pnet]
     ports:
-      - "5432:5432"
+     - "5432:5435"
 
 networks:
   pnet:
