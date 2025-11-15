@@ -61,6 +61,7 @@ services:
     command: patroni /etc/patroni.yml
     networks:
       pnet:
+        ipv4_address: 172.18.0.5
         aliases:
           - patroni1
     ports:
@@ -80,6 +81,7 @@ services:
     command: patroni /etc/patroni.yml
     networks:
       pnet:
+        ipv4_address: 172.18.0.6
         aliases:
           - patroni2
     ports:
@@ -99,6 +101,7 @@ services:
     command: patroni /etc/patroni.yml
     networks:
       pnet:
+        ipv4_address: 172.18.0.7
         aliases:
           - patroni3
     ports:
@@ -111,7 +114,9 @@ services:
     depends_on: [patroni1,patroni2,patroni3]
     volumes:
       - ./configs/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
-    networks: [pnet]
+    networks:
+      pnet:
+        ipv4_address: 172.18.0.8
     ports:
      - "5432:5435"
 
@@ -121,7 +126,7 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.18.0.0/16
+        - subnet: 172.18.0.0/28
 volumes:
   patroni1-data:
   patroni1-wal:

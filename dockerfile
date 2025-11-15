@@ -56,13 +56,17 @@ RUN pip3 install --no-cache-dir \
 RUN mkdir -p /var/lib/postgresql/data \
     && mkdir -p /var/run/postgresql \
     && mkdir -p /etc/patroni \
-    && mkdir -p /var/log/patroni
+    && mkdir -p /var/log/patroni \
+    && mkdir -p /var/lib/postgresql/wal_archive
 
 # Configurer les permissions PostgreSQL
 RUN chown -R postgres:postgres /var/lib/postgresql \
     && chown -R postgres:postgres /var/run/postgresql \
-    && chown -R postgres:postgres /var/log/patroni
-
+    && chown -R postgres:postgres /var/log/patroni \
+    && chown -R postgres:postgres /var/lib/postgresql/data \
+    && chown -R postgres:postgres /var/lib/postgresql/wal_archive
+RUN chmod 700 /var/lib/postgresql/data \
+    && chmod 750 /var/run/postgresql
 # Installer outils supplémentaires
 RUN apt-get update && apt-get install -y \
     psmisc \
@@ -79,20 +83,7 @@ pg_isready -U postgres -h 127.0.0.1 -p 5432\n\
 exit $?' > /usr/local/bin/healthcheck.sh \
     && chmod +x /usr/local/bin/healthcheck.sh
 
-# Script d'initialisation corrigé - PLUS de 'su'
-RUN echo '#!/bin/bash\n\
-set -e\n\
-\n\
-# Initialiser le cluster PostgreSQL si nécessaire\n\
-if [ ! -f /var/lib/postgresql/data/postgresql.conf ]; then\n\
-    echo "Initializing PostgreSQL cluster..."\n\
-    # Utiliser directement l'\''utilisateur postgres sans su\n\
-    /usr/lib/postgresql/${PG_VERSION}/bin/initdb -D /var/lib/postgresql/data --encoding=UTF8 --data-checksums\n\
-fi\n\
-\n\
-# Démarrer Patroni\n\
-exec patroni /etc/patroni/patroni.yml' > /usr/local/bin/start-patroni.sh \
-    && chmod +x /usr/local/bin/start-patroni.sh
+RUN echo '#!/bin/bash\nset -e\n\n# Laisser Patroni gérer initdb automatiquement\nexec patroni /etc/patroni/patroni.yml' > /usr/local/bin/start-patroni.sh && chmod +x /usr/local/bin/start-patroni.sh
 
 # Nettoyer le cache
 RUN apt-get clean \
