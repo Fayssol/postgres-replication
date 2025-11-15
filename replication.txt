@@ -1,0 +1,28 @@
+# test de load : 
+export PGPASSWORD='postgres_password'
+for i in {1..5}; do
+  psql -h localhost -p 5432 -U postgres -d postgres -c "SELECT inet_server_addr();"
+done
+unset PGPASSWORD
+
+# replica ou master : 
+# Test sur chaque nœud via HAProxy (il routera vers le primary)
+psql -h localhost -p 5432 -U postgres -d postgres -c "SELECT pg_is_in_recovery(), inet_server_addr();"
+
+# Test direct sur chaque nœud
+psql -h localhost -p 5433 -U postgres -d postgres -c "SELECT pg_is_in_recovery();"  # patroni1
+psql -h localhost -p 5434 -U postgres -d postgres -c "SELECT pg_is_in_recovery();"  # patroni2
+psql -h localhost -p 5435 -U postgres -d postgres -c "SELECT pg_is_in_recovery();"  # patroni3
+
+# ecriture : 
+CREATE DATABASE testdb;
+\c testdb
+CREATE TABLE t1(id SERIAL PRIMARY KEY, message TEXT);
+INSERT INTO t1(message) VALUES ('hello from leader');
+
+# basculer
+docker stop patroni1-container
+
+# list replica : 
+psql -h localhost -p 5432 -U postgres -d postgres -c "SELECT client_addr, state, sync_state FROM pg_stat_replication;"
+et test ecriture rapidemant
