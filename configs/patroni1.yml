@@ -33,8 +33,8 @@ bootstrap:
     - encoding: UTF8
     - data-checksums
   pg_hba:
-    - host replication replicator 0.0.0.0/0 md5
-    - host all all 0.0.0.0/0 md5
+    - host replication replicator 172.18.0.0/28 md5
+    - host all all 172.18.0.0/28 md5
   users:
     replicator:
       password: repl_password
