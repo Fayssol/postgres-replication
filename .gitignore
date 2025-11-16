@@ -7,3 +7,5 @@ secrets/
 # Logs
 *.log
 logs/
+
+_dockerfile.cp
