@@ -47,6 +47,8 @@ bootstrap:
         - superuser
 
 postgresql:
+  callbacks:
+    on_role_change: /etc/patroni/callbacks/on_role_change.sh
   listen: 0.0.0.0:5432
   connect_address: patroni1:5432
   data_dir: /var/lib/postgresql/data
