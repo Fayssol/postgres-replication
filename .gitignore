@@ -8,4 +8,5 @@ secrets/
 *.log
 logs/
 
-_dockerfile.cp
+copy.txt
+replication.txt
