@@ -53,11 +53,19 @@ services:
     depends_on: [etcd1,etcd2,etcd3]
     volumes:
       - ./configs/patroni1.yml:/etc/patroni/patroni.yml:ro
+      - ./callbacks/on_role_change.sh:/etc/patroni/callbacks/on_role_change.sh:ro
       - patroni1-data:/var/lib/postgresql/data:rw
       - patroni1-wal:/var/lib/postgresql/wal_archive:rw
     environment:
       - PATRONI_NAME=pg1
       - PATRONI_LOG=/var/lib/postgresql/data/patroni1/patroni.log
+      # Variables SMTP depuis le fichier .env
+      - SMTP_SERVER=${SMTP_SERVER}
+      - SMTP_PORT=${SMTP_PORT}
+      - FROM_EMAIL=${FROM_EMAIL}
+      - TO_EMAIL=${TO_EMAIL}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
     command: patroni /etc/patroni.yml
     networks:
       pnet:
@@ -73,11 +81,19 @@ services:
     depends_on: [etcd1,etcd2,etcd3]
     volumes:
       - ./configs/patroni2.yml:/etc/patroni/patroni.yml:ro
+      - ./callbacks/on_role_change.sh:/etc/patroni/callbacks/on_role_change.sh:ro
       - patroni2-data:/var/lib/postgresql/data:rw
       - patroni2-wal:/var/lib/postgresql/wal_archive:rw
     environment:
       - PATRONI_NAME=pg2
       - PATRONI_LOG=/var/lib/postgresql/data/patroni2/patroni.log
+      # Variables SMTP depuis le fichier .env
+      - SMTP_SERVER=${SMTP_SERVER}
+      - SMTP_PORT=${SMTP_PORT}
+      - FROM_EMAIL=${FROM_EMAIL}
+      - TO_EMAIL=${TO_EMAIL}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
     command: patroni /etc/patroni.yml
     networks:
       pnet:
@@ -93,11 +109,19 @@ services:
     depends_on: [etcd1,etcd2,etcd3]
     volumes:
       - ./configs/patroni3.yml:/etc/patroni/patroni.yml:ro
+      - ./callbacks/on_role_change.sh:/etc/patroni/callbacks/on_role_change.sh:ro
       - patroni3-data:/var/lib/postgresql/data:rw
       - patroni3-wal:/var/lib/postgresql/wal_archive:rw
     environment:
       - PATRONI_NAME=pg3
       - PATRONI_LOG=/var/lib/postgresql/data/patroni3/patroni.log
+      # Variables SMTP depuis le fichier .env
+      - SMTP_SERVER=${SMTP_SERVER}
+      - SMTP_PORT=${SMTP_PORT}
+      - FROM_EMAIL=${FROM_EMAIL}
+      - TO_EMAIL=${TO_EMAIL}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
     command: patroni /etc/patroni.yml
     networks:
       pnet:

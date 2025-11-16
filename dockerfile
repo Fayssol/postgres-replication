@@ -67,6 +67,24 @@ RUN chown -R postgres:postgres /var/lib/postgresql \
     && chown -R postgres:postgres /var/lib/postgresql/wal_archive
 RUN chmod 700 /var/lib/postgresql/data \
     && chmod 750 /var/run/postgresql
+# Installer sendEmail et les dépendances
+RUN apt-get update && apt-get install -y \
+    sendemail \
+    libio-socket-ssl-perl \
+    libnet-ssleay-perl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Créer les répertoires pour les callbacks et logs
+RUN mkdir -p /etc/patroni/callbacks /var/log/patroni
+
+# Copier le script de callback
+COPY callbacks/on_role_change.sh /etc/patroni/callbacks/
+
+# Rendre le script exécutable
+RUN chmod +x /etc/patroni/callbacks/on_role_change.sh
+
+# Créer l'utilisateur pour les logs
+RUN chown -R postgres:postgres /var/log/patroni    
 # Installer outils supplémentaires
 RUN apt-get update && apt-get install -y \
     psmisc \

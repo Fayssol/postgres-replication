@@ -1,0 +1,9 @@
+# Fichiers sensibles
+.env
+*.env
+configs/secrets/
+secrets/
+
+# Logs
+*.log
+logs/
