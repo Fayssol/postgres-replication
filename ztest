@@ -1,0 +1,24 @@
+**** up
+docker compose up -d
+
+**** etat du cluster
+docker exec -it patroni1-container curl http://localhost:8008/cluster
+
+***** Ecriture : (test de replication)
+CREATE DATABASE testdb;
+\c testdb
+CREATE TABLE t1(id SERIAL PRIMARY KEY, message TEXT);
+INSERT INTO t1(message) VALUES ('hello from leader');
+
+***** LB
+export PGPASSWORD='postgres_password'
+for i in {1..5}; do
+  psql -h localhost -p 5432 -U postgres -d postgres -c "SELECT inet_server_addr();"
+done
+unset PGPASSWORD
+
+
+**** test failover
+docker stop patroni1-container
+
+***** docker start patroni1-container
