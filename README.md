@@ -55,7 +55,7 @@ Dans ce projet, chaque nœud Patroni exécute une instance PostgreSQL configuré
 - jouer le rôle de leader ou replica,
 - assurer la continuité en cas de basculement.
 
-````
+```
 +------------------------+
 |     PostgreSQL         |
 |  Stockage des données  |
