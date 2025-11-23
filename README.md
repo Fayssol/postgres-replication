@@ -166,19 +166,21 @@ Dans ce projet :
 # Lancement
 Allons directement sur la plateforme : https://labs.play-with-docker.com pour lancer notre projet et le tester en ligne.
 OU encore mieux dans le codespace de github
-- Mettre à jour et installer psql
-si dans labs.play-with-docker : 
+
+## Mettre à jour et installer psql
+  
+- si dans labs.play-with-docker : 
 ```
 apk update 
 apk add postgresql-client
 ```
-si dans codespace de github
+- si dans codespace de github
 ```
 sudo apt-get update
 sudo apt-get install -y postgresql-client
 
 ```
-- Clone
+## Clone du projet
 
 ```
 git clone https://github.com/Fayssol/postgres-replication.git
@@ -186,7 +188,7 @@ git clone https://github.com/Fayssol/postgres-replication.git
 cd postgres-replication
 ```
 
-- Création du sous réseau et de l'image personnalisée de patroni:
+## Création du sous réseau et de l'image personnalisée de patroni:
 
 ```
 docker network create --driver bridge --subnet 172.18.0.0/28 pnet
@@ -194,13 +196,13 @@ docker build -t my-patroni-custom:latest .
 
 ```
 
-- Lancer les conteneurs
+## Lancer les conteneurs
 
 ```
 docker compose up -d
 ```
 
-- verifier le status des instances : `docker compose ps`
+## verifier le status des instances : `docker compose ps`
 ```
  ➜ /workspaces/postgres-replication (main) $ docker compose ps
 NAME                 IMAGE                            COMMAND                  SERVICE    CREATED          STATUS          PORTS
@@ -214,34 +216,38 @@ patroni3-container   my-patroni-custom                "/usr/local/bin/star…"  
 
 ```
 
--  Est ce un replica ? : 
-Test sur chaque nœud via HAProxy (il routera vers le primary)
+##  Est ce un replica ? : 
+- Test via HAProxy (il routera vers le primary)
+```
 psql -h localhost -p 5432 -U postgres -d postgres -c "SELECT pg_is_in_recovery(), inet_server_addr();"
-
-Test direct sur chaque nœud
+```
+- Test direct sur chaque nœud
+```
 psql -h localhost -p 5433 -U postgres -d postgres -c "SELECT pg_is_in_recovery();"  # patroni1
 psql -h localhost -p 5434 -U postgres -d postgres -c "SELECT pg_is_in_recovery();"  # patroni2
 psql -h localhost -p 5435 -U postgres -d postgres -c "SELECT pg_is_in_recovery();"  # patroni3
-
-- list des replica : (cette liste peut prendre du temps)
+```
+## list des replica : (cette liste peut prendre du temps)
 ```
 psql -h localhost -p 5432 -U postgres -d postgres -c "SELECT client_addr, state, sync_state FROM pg_stat_replication;"
 
 ```
 
-- Etat du cluster : 
+## Etat du cluster : 
 ```
 docker exec -it patroni1-container curl http://localhost:8008/cluster
 
 ```
 ça affiche le role actuel de chaque noeau du cluster (leader ou replica).
 
-- Ecriture : (test de replication)
+## Ecriture : (test de replication)
+```
 CREATE DATABASE testdb;
 \c testdb
 CREATE TABLE t1(id SERIAL PRIMARY KEY, message TEXT);
 INSERT INTO t1(message) VALUES ('hello from leader');
-# Test de load balancing  : 
+```
+## Test de load balancing  : 
 ```
 export PGPASSWORD='postgres_password'
 for i in {1..5}; do
@@ -250,17 +256,18 @@ done
 unset PGPASSWORD
 
 ```
-# Maintenant testons le basculement automatique
+## Maintenant testons le basculement automatique
 Pour cela nous allons stimuler une panne du master actuel en le stoppant
 ```
 docker stop patroni1-container
 
 ```
-- etat du cluster : (Vérifier le nouveau primary)
+## etat du cluster : (Vérifier le nouveau primary)
 ```
 docker exec -it patroni2-container curl http://localhost:8009/cluster
 ```
 - vous pouvez refaire te test de replcation histoire de verifier
-- Redémarrer l'ancien primary
+## Redémarrer l'ancien primary
+```
 docker start patroni1-container
-
+```
