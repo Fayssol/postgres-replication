@@ -39,4 +39,5 @@ unset PGPASSWORD
 docker stop patroni1-container
   --callback
 
-***** docker start patroni1-container
+***** retour ancien leader
+docker start patroni1-container

@@ -10,8 +10,6 @@ etcd3:
   hosts: "etcd1:2379,etcd2:2379,etcd3:2379"
   protocol: http
 
-# SUPPRIMER TOUTE LA SECTION bootstrap
-
 postgresql:
   callbacks:
     on_role_change: /etc/patroni/callbacks/on_role_change.sh
