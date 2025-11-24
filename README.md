@@ -24,8 +24,7 @@ postgres-cluster/
 
 ```
     +---------------------------------+
-    |         HAProxy (LB)            |
-    |    (localhost:5432 / 7000)      |
+    |         HAProxy (LB)            | 
     +---------------------------------+
               |
               ↓ (connections PostgreSQL)
@@ -115,8 +114,8 @@ Il distribue automatiquement les connexions vers :
 - les réplicas (pour les lectures → backend “pg_back”)
 - Il détecte l’état des nœuds via des “health checks”.
 ```
-Client → HAProxy → Leader (writes)
-                 → Replicas (reads)
+Client → HAProxy → Cluster Patroni  → Leader (writes)
+                                    → Replicas (reads)
 
 ```
 C’est grâce à lui que l’application n’a pas besoin de connaître l’IP du leader.
