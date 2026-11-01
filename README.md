@@ -270,3 +270,58 @@ docker exec -it patroni2-container curl http://localhost:8009/cluster
 ```
 docker start patroni1-container
 ```
+
+## Pgpool-II : Pooling, Load Balancing et Haute Disponibilité
+
+### 1. Présentation et rôle de Pgpool-II
+
+**Pgpool-II** est un middleware PostgreSQL qui se place entre les applications clientes et les serveurs PostgreSQL. Il apporte plusieurs fonctionnalités :
+
+- **Connection Pooling** : mutualisation et réutilisation des connexions PostgreSQL.
+- **Load Balancing** : répartition des requêtes de lecture entre les nœuds disponibles.
+- **Health Checking** : surveillance périodique de la disponibilité des serveurs PostgreSQL.
+- **Failover Management** : détection des nœuds indisponibles et actualisation de leur état dans le pool.
+- **Streaming Replication Awareness** : prise en compte des rôles primaire/réplique et de l'état de réplication.
+
+Dans cette architecture, **Patroni reste responsable de l'élection et de la promotion du nouveau primaire**, tandis que Pgpool-II gère les connexions clientes, le pooling et la répartition des requêtes.
+
+### 2. Pgpool-II vs HAProxy
+
+HAProxy et Pgpool-II peuvent tous deux servir de point d'entrée vers un cluster PostgreSQL, mais leurs responsabilités diffèrent.
+
+| Fonctionnalité | HAProxy | Pgpool-II |
+|---|---|---|
+| Load balancing TCP | Oui | Oui |
+| Connection pooling | Non | Oui |
+| Compréhension du protocole PostgreSQL | Non | Oui |
+| Répartition des lectures SQL | Non, au niveau connexion | Oui |
+| Health checking | Oui, via les endpoints Patroni | Oui, via les connexions PostgreSQL |
+| Détection des rôles primaire/réplique | Via les endpoints HTTP Patroni | Native |
+| Routage SQL | Non | Oui |
+
+**Pourquoi utiliser Pgpool-II ?**
+
+HAProxy assure principalement le routage réseau et la distribution des connexions. Pgpool-II va plus loin en comprenant le protocole PostgreSQL et en proposant le pooling des connexions ainsi que la répartition des lectures.
+
+### 3. Architecture avec Pgpool-II
+
+L'intégration de Pgpool-II ajoute un point d'accès intelligent devant les trois instances PostgreSQL gérées par Patroni.
+
+```text
+                  Applications clientes
+                           |
+                           v
+                       Pgpool-II
+                       Port 9999
+                           |
+              +------------+------------+
+              |            |            |
+              v            v            v
+          Patroni 1    Patroni 2    Patroni 3
+          PostgreSQL   PostgreSQL   PostgreSQL
+          Replica      Replica      Primary
+              |            |            |
+              +------------+------------+
+                           |
+                      Cluster etcd
+                   Gestion du consensus
