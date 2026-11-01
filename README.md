@@ -320,6 +320,7 @@ L'intégration de Pgpool-II ajoute un point d'accès intelligent devant les troi
           Patroni 1    Patroni 2    Patroni 3
           PostgreSQL   PostgreSQL   PostgreSQL
           Replica      Replica      Primary
+           Read           Read       Read/Write
               |            |            |
               +------------+------------+
                            |
