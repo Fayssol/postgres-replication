@@ -168,6 +168,39 @@ services:
           - pgpool
 
     restart: unless-stopped
+    # --- PostgreSQL dédié à Odoo ---
+  odoo-db:
+    image: postgres:16
+    container_name: odoo-db-container
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: ${ODOO_DB_PASSWORD}
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data
+    networks:
+      - pnet
+    restart: unless-stopped
+
+  # --- Odoo 18 ---
+  odoo:
+    image: odoo:18.0
+    container_name: odoo-container
+    depends_on:
+      - odoo-db
+    ports:
+      - "8069:8069"
+    environment:
+      HOST: odoo-db
+      USER: odoo
+      PASSWORD: ${ODOO_DB_PASSWORD}
+    volumes:
+      - odoo-web-data:/var/lib/odoo
+      - ./custom_addons:/mnt/extra-addons
+    networks:
+      - pnet
+    restart: unless-stopped
+    
 networks:
   pnet:
     external: true
@@ -182,3 +215,5 @@ volumes:
   patroni2-wal:
   patroni3-data:
   patroni3-wal:
+   odoo-db-data:
+  odoo-web-data:
