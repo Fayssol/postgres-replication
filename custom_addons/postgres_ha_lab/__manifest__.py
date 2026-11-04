@@ -4,7 +4,11 @@
     'category': 'Administration',
     'summary': 'Supervision et gestion d’un cluster PostgreSQL haute disponibilité',
     'depends': ['base'],
-    'data': [],
+    'data': [
+        "security/ir.model.access.csv",
+        "views/ha_node_views.xml",
+        "views/menu_views.xml",
+    ],
     'installable': True,
     'application': True,
 }
