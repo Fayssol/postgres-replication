@@ -8,6 +8,7 @@
         "security/ir.model.access.csv",
         "views/ha_node_views.xml",
         "views/menu_views.xml",
+        "data/ir_cron.xml",
     ],
     'installable': True,
     'application': True,

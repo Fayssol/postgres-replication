@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+        Tâche de supervision automatique du cluster.
+
+        Elle appelle synchronize_cluster() toutes les minutes.
+        Le service découvre les conteneurs Docker et actualise les nœuds.
+    -->
+    <record id="ir_cron_postgres_ha_discovery" model="ir.cron">
+        <field name="name">PostgreSQL HA - Découverte du cluster</field>
+        <field name="model_id" ref="model_postgres_ha_discovery"/>
+        <field name="state">code</field>
+        <field name="code">model.synchronize_cluster()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">minutes</field>
+        <field name="active" eval="True"/>
+    </record>
+</odoo>

@@ -48,6 +48,10 @@ services:
 
   # --- Patroni / Postgres nodes ---
   patroni1:
+    labels:
+      ha.manager: "postgres-ha-lab"
+      ha.component: "patroni"
+      ha.api_port: "8008"
     image: my-patroni-custom
     container_name: patroni1-container
     depends_on: [etcd1,etcd2,etcd3]
@@ -75,6 +79,10 @@ services:
       - "5433:5432" # outside:inside
 
   patroni2:
+    labels:
+      ha.manager: "postgres-ha-lab"
+      ha.component: "patroni"
+      ha.api_port: "8008"
     image: my-patroni-custom
     container_name: patroni2-container
     depends_on: [etcd1,etcd2,etcd3]
@@ -102,6 +110,10 @@ services:
       - "5434:5432"
 
   patroni3:
+    labels:
+      ha.manager: "postgres-ha-lab"
+      ha.component: "patroni"
+      ha.api_port: "8008"
     image: my-patroni-custom
     container_name: patroni3-container
     depends_on: [etcd1,etcd2,etcd3]
@@ -197,6 +209,9 @@ services:
       HOST: odoo-db
       USER: odoo
       PASSWORD: ${ODOO_DB_PASSWORD}
+      HA_DOCKER_API_URL: http://docker-socket-proxy:2375
+      HA_DOCKER_NETWORK: pnet
+      HA_DOCKER_LABEL: ha.manager=postgres-ha-lab
     volumes:
       - odoo-web-data:/var/lib/odoo
       - ./custom_addons:/mnt/extra-addons
@@ -205,6 +220,25 @@ services:
         ipv4_address: 172.18.0.11
         aliases:
           - odoo
+    restart: unless-stopped
+
+  docker-socket-proxy:
+    image: tecnativa/docker-socket-proxy:latest
+    container_name: docker-socket-proxy
+    environment:
+      # Autorise la lecture des informations Docker.
+      INFO: 1
+      PING: 1
+      VERSION: 1
+      CONTAINERS: 1
+      NETWORKS: 1
+
+      # Désactive les opérations de modification.
+      POST: 0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - pnet
     restart: unless-stopped
 
 networks:
