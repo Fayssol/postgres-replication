@@ -238,7 +238,10 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
-      - pnet
+      pnet:
+        ipv4_address: 172.18.0.12
+        aliases:
+          - docker-socket-proxy
     restart: unless-stopped
 
 networks:
@@ -247,7 +250,7 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.18.0.0/28
+        - subnet: 172.18.0.0/24
 volumes:
   patroni1-data:
   patroni1-wal:

@@ -190,7 +190,7 @@ cd postgres-replication
 ## Création du sous réseau et de l'image personnalisée de patroni:
 
 ```
-docker network create --driver bridge --subnet 172.18.0.0/28 pnet
+docker network create --driver bridge --subnet 172.18.0.0/24 pnet
 docker build -t my-patroni-custom:latest .
 
 ```
