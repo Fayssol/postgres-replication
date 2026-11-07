@@ -109,7 +109,7 @@ class PostgresHANode(models.Model):
 
     state = fields.Selection(
         [
-            ("running", "En fonctionnement"),
+            ("running", "Actif"),
             ("stopped", "Arrêté"),
             ("unknown", "Inconnu"),
         ],
