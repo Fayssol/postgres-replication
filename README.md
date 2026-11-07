@@ -191,7 +191,7 @@ cd postgres-replication
 
 ```
 docker network create --driver bridge --subnet 172.18.0.0/24 pnet
-docker build -t my-patroni-custom:latest .
+docker build -t my-patroni-custom:latest -f Dockerfile.patroni .
 
 ```
 

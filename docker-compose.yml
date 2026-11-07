@@ -69,7 +69,8 @@ services:
       - TO_EMAIL=${TO_EMAIL}
       - SMTP_USERNAME=${SMTP_USERNAME}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
-    command: patroni /etc/patroni.yml
+    #command: patroni /etc/patroni.yml
+    command: patroni /etc/patroni/patroni.yml
     networks:
       pnet:
         ipv4_address: 172.18.0.5
@@ -100,7 +101,8 @@ services:
       - TO_EMAIL=${TO_EMAIL}
       - SMTP_USERNAME=${SMTP_USERNAME}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
-    command: patroni /etc/patroni.yml
+    #command: patroni /etc/patroni.yml
+    command: patroni /etc/patroni/patroni.yml
     networks:
       pnet:
         ipv4_address: 172.18.0.6
@@ -131,7 +133,8 @@ services:
       - TO_EMAIL=${TO_EMAIL}
       - SMTP_USERNAME=${SMTP_USERNAME}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
-    command: patroni /etc/patroni.yml
+    #command: patroni /etc/patroni.yml
+    command: patroni /etc/patroni/patroni.yml
     networks:
       pnet:
         ipv4_address: 172.18.0.7
