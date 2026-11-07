@@ -48,6 +48,10 @@ services:
 
   # --- Patroni / Postgres nodes ---
   patroni1:
+    labels:
+      ha.manager: "postgres-ha-lab"
+      ha.component: "patroni"
+      ha.api_port: "8008"
     image: my-patroni-custom
     container_name: patroni1-container
     depends_on: [etcd1,etcd2,etcd3]
@@ -65,7 +69,8 @@ services:
       - TO_EMAIL=${TO_EMAIL}
       - SMTP_USERNAME=${SMTP_USERNAME}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
-    command: patroni /etc/patroni.yml
+    #command: patroni /etc/patroni.yml
+    command: patroni /etc/patroni/patroni.yml
     networks:
       pnet:
         ipv4_address: 172.18.0.5
@@ -75,6 +80,10 @@ services:
       - "5433:5432" # outside:inside
 
   patroni2:
+    labels:
+      ha.manager: "postgres-ha-lab"
+      ha.component: "patroni"
+      ha.api_port: "8008"
     image: my-patroni-custom
     container_name: patroni2-container
     depends_on: [etcd1,etcd2,etcd3]
@@ -92,7 +101,8 @@ services:
       - TO_EMAIL=${TO_EMAIL}
       - SMTP_USERNAME=${SMTP_USERNAME}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
-    command: patroni /etc/patroni.yml
+    #command: patroni /etc/patroni.yml
+    command: patroni /etc/patroni/patroni.yml
     networks:
       pnet:
         ipv4_address: 172.18.0.6
@@ -102,6 +112,10 @@ services:
       - "5434:5432"
 
   patroni3:
+    labels:
+      ha.manager: "postgres-ha-lab"
+      ha.component: "patroni"
+      ha.api_port: "8008"
     image: my-patroni-custom
     container_name: patroni3-container
     depends_on: [etcd1,etcd2,etcd3]
@@ -119,7 +133,8 @@ services:
       - TO_EMAIL=${TO_EMAIL}
       - SMTP_USERNAME=${SMTP_USERNAME}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
-    command: patroni /etc/patroni.yml
+    #command: patroni /etc/patroni.yml
+    command: patroni /etc/patroni/patroni.yml
     networks:
       pnet:
         ipv4_address: 172.18.0.7
@@ -168,13 +183,77 @@ services:
           - pgpool
 
     restart: unless-stopped
+    # --- PostgreSQL dédié à Odoo ---
+  odoo-db:
+    image: postgres:16
+    container_name: odoo-db-container
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: ${ODOO_DB_PASSWORD}
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data
+    networks:
+      pnet:
+        ipv4_address: 172.18.0.10
+        aliases:
+          - odoo-db
+    restart: unless-stopped
+
+  # --- Odoo 18 ---
+  odoo:
+    image: odoo:18.0
+    container_name: odoo-container
+    depends_on:
+      - odoo-db
+    ports:
+      - "8069:8069"
+    environment:
+      HOST: odoo-db
+      USER: odoo
+      PASSWORD: ${ODOO_DB_PASSWORD}
+      HA_DOCKER_API_URL: http://docker-socket-proxy:2375
+      HA_DOCKER_NETWORK: pnet
+      HA_DOCKER_LABEL: ha.manager=postgres-ha-lab
+    volumes:
+      - odoo-web-data:/var/lib/odoo
+      - ./custom_addons:/mnt/extra-addons
+    networks:
+      pnet:
+        ipv4_address: 172.18.0.11
+        aliases:
+          - odoo
+    restart: unless-stopped
+
+  docker-socket-proxy:
+    image: tecnativa/docker-socket-proxy:latest
+    container_name: docker-socket-proxy
+    environment:
+      # Autorise la lecture des informations Docker.
+      INFO: 1
+      PING: 1
+      VERSION: 1
+      CONTAINERS: 1
+      NETWORKS: 1
+
+      # Désactive les opérations de modification.
+      POST: 0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      pnet:
+        ipv4_address: 172.18.0.12
+        aliases:
+          - docker-socket-proxy
+    restart: unless-stopped
+
 networks:
   pnet:
     external: true
     driver: bridge
     ipam:
       config:
-        - subnet: 172.18.0.0/28
+        - subnet: 172.18.0.0/24
 volumes:
   patroni1-data:
   patroni1-wal:
@@ -182,3 +261,5 @@ volumes:
   patroni2-wal:
   patroni3-data:
   patroni3-wal:
+  odoo-db-data:
+  odoo-web-data:

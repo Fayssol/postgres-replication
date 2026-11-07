@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <menuitem
+        id="menu_postgres_ha_root"
+        name="PostgreSQL HA Manager"
+        sequence="10"
+        groups="base.group_system"
+    />
+
+    <menuitem
+        id="menu_postgres_ha_nodes"
+        name="Nœuds du cluster"
+        parent="menu_postgres_ha_root"
+        action="action_postgres_ha_nodes"
+        sequence="10"
+        groups="base.group_system"
+    />
+
+</odoo>
