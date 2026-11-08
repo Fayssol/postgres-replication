@@ -30,6 +30,10 @@ from odoo.exceptions import UserError
 
 from .tests.replication_test import ReplicationTest
 
+from .tests.failover_test import FailoverTest
+from .tests.reconnection_test import ReconnectionTest
+from .tests.rejoin_test import RejoinTest
+
 
 _logger = logging.getLogger(__name__)
 
@@ -38,22 +42,17 @@ class PostgresHATestRunner(models.AbstractModel):
     _name = "postgres.ha.test.runner"
     _description = "Moteur d'exécution des tests PostgreSQL HA"
 
+    
     def _get_node_record(self, host):
         """
-        Retrouve l'enregistrement Odoo correspondant à un hôte PostgreSQL.
+        Retrouve un nœud Odoo à partir de son nom DNS ou de son hôte.
 
-        La découverte Docker stocke notamment le service Docker et l'hôte
-        dans le modèle postgres.ha.node.
-
-        Nous réutilisons ces enregistrements existants : aucun doublon
-        de nœud ne sera créé par le moteur de test.
-
-        Args:
-            host (str): Nom DNS, par exemple patroni2.
-
-        Returns:
-            recordset: Nœud Odoo correspondant, ou recordset vide.
+        Si aucun hôte n'est fourni, retourne un recordset vide.
+        Cela évite de sélectionner accidentellement un autre nœud.
         """
+
+        if not host:
+            return self.env["postgres.ha.node"]
 
         return self.env["postgres.ha.node"].search([
             "|",
@@ -61,30 +60,32 @@ class PostgresHATestRunner(models.AbstractModel):
             ("host", "=", host),
         ], limit=1)
 
+
+    
     def _get_scenario(self, test):
         """
-        Construit l'instance Python correspondant au code du scénario.
+        Associe le code Odoo à la classe Python qui exécute le scénario.
 
-        Pour ajouter un nouveau scénario :
-            - créer sa classe dans services/tests ;
-            - l'importer ici ;
-            - ajouter son code dans ce dictionnaire.
-
-        Les scénarios non encore développés sont volontairement refusés.
+        Chaque scénario est indépendant. Le runner ne connaît pas les
+        détails des opérations SQL ou des appels REST qu'il déclenche.
         """
 
         scenarios = {
             "replication": ReplicationTest,
+            "failover": FailoverTest,
+            "reconnection": ReconnectionTest,
+            "rejoin": RejoinTest,
         }
 
         scenario_class = scenarios.get(test.code)
 
         if not scenario_class:
             raise UserError(_(
-                "Le scénario '%s' n'est pas encore implémenté."
+                "Aucune implémentation n'existe pour le scénario '%s'."
             ) % test.display_name)
 
         return scenario_class(self.env)
+
 
     def run_test(self, test):
         """
