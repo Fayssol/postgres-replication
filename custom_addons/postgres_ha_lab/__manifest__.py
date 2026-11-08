@@ -9,6 +9,8 @@
         "views/ha_node_views.xml",
         "views/menu_views.xml",
         "data/ir_cron.xml",
+        "views/ha_test_views.xml",
+        "views/ha_test_result_views.xml",
     ],
     'installable': True,
     'application': True,
