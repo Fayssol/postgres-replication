@@ -1,3 +1,25 @@
+
+"""
+=============================================================================
+POSTGRES HA LAB - MODÈLE DES RÉSULTATS DE TEST
+=============================================================================
+
+Ce modèle conserve l'historique des exécutions des scénarios PostgreSQL HA.
+
+Chaque clic sur le bouton "Exécuter" doit produire un nouvel enregistrement.
+
+Exemple :
+    Test de réplication
+        ├── Exécution 1 : Réussie
+        ├── Exécution 2 : Échouée
+        └── Exécution 3 : Réussie
+
+Les résultats ne sont jamais remplacés par l'exécution suivante.
+
+Cela permet de suivre l'évolution de la fiabilité du cluster dans le temps.
+=============================================================================
+"""
+
 from odoo import fields, models
 
 
@@ -6,18 +28,28 @@ class PostgresHATestResult(models.Model):
     _description = "Résultat d'exécution d'un test PostgreSQL HA"
     _order = "execution_date desc, id desc"
 
+    # ---------------------------------------------------------------------
+    # IDENTIFICATION
+    # ---------------------------------------------------------------------
+
     name = fields.Char(
         string="Référence",
         required=True,
-        default="Nouvelle exécution"
+        default="Nouvelle exécution",
+        copy=False
     )
 
     test_id = fields.Many2one(
         comodel_name="postgres.ha.test",
         string="Scénario",
         required=True,
-        ondelete="cascade"
+        ondelete="cascade",
+        index=True
     )
+
+    # ---------------------------------------------------------------------
+    # ÉTAT DE L'EXÉCUTION
+    # ---------------------------------------------------------------------
 
     status = fields.Selection(
         selection=[
@@ -30,19 +62,30 @@ class PostgresHATestResult(models.Model):
         ],
         string="Résultat",
         default="pending",
-        required=True
+        required=True,
+        index=True
     )
 
     execution_date = fields.Datetime(
-        string="Date d'exécution",
+        string="Début de l'exécution",
         default=fields.Datetime.now,
-        required=True
+        required=True,
+        index=True
+    )
+
+    finished_date = fields.Datetime(
+        string="Fin de l'exécution"
     )
 
     duration = fields.Float(
         string="Durée (secondes)",
-        digits=(10, 2)
+        digits=(10, 2),
+        help="Temps total écoulé entre le début et la fin du test."
     )
+
+    # ---------------------------------------------------------------------
+    # INFORMATIONS SUR LE LEADER
+    # ---------------------------------------------------------------------
 
     leader_before = fields.Many2one(
         comodel_name="postgres.ha.node",
@@ -54,10 +97,19 @@ class PostgresHATestResult(models.Model):
         string="Leader après le test"
     )
 
+    # ---------------------------------------------------------------------
+    # RAPPORT TECHNIQUE
+    # ---------------------------------------------------------------------
+
     details = fields.Text(
-        string="Détails techniques"
+        string="Détails techniques",
+        help=(
+            "Compte rendu détaillé de l'exécution : "
+            "opérations réalisées, nœuds vérifiés et résultats obtenus."
+        )
     )
 
     error_message = fields.Text(
-        string="Message d'erreur"
+        string="Message d'erreur",
+        help="Message technique lorsqu'une opération ne peut pas aboutir."
     )

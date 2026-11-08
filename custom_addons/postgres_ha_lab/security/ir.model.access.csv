@@ -1,5 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_postgres_ha_node,access.postgres.ha.node,model_postgres_ha_node,base.group_system,1,1,1,1
-
 access_postgres_ha_test,postgres.ha.test,model_postgres_ha_test,base.group_system,1,1,1,1
 access_postgres_ha_test_result,postgres.ha.test.result,model_postgres_ha_test_result,base.group_system,1,1,1,1

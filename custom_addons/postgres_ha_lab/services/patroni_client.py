@@ -114,6 +114,67 @@ class PatroniClient:
 
             return self._unavailable_result(str(error))
 
+    
+    def switchover(self, leader_name, candidate_name):
+        """
+        Demande à Patroni un switchover contrôlé.
+
+        Le switchover transfère le rôle de Leader vers un Replica choisi.
+        Contrairement à un arrêt brutal du conteneur, cette opération
+        permet à Patroni d'organiser proprement la transition.
+
+        Args:
+            leader_name: Nom Patroni du Leader actuel (ex: pg1).
+            candidate_name: Nom Patroni du Replica candidat (ex: pg2).
+
+        Returns:
+            dict: Résultat HTTP de la demande.
+
+        Raises:
+            RuntimeError: Si Patroni refuse ou ne reçoit pas la demande.
+        """
+        import os
+
+        endpoint = f"{self.base_url}/switchover"
+
+        # L'authentification est facultative. Elle doit être activée
+        # si l'API REST Patroni est protégée par HTTP Basic Auth.
+        username = os.environ.get("HA_PATRONI_USERNAME")
+        password = os.environ.get("HA_PATRONI_PASSWORD")
+
+        auth = (username, password) if username and password else None
+
+        payload = {
+            "leader": leader_name,
+            "candidate": candidate_name,
+        }
+
+        try:
+            response = requests.post(
+                endpoint,
+                json=payload,
+                timeout=10,
+                auth=auth,
+                headers={"Accept": "application/json"},
+            )
+
+            if not response.ok:
+                raise RuntimeError(
+                    f"Patroni a refusé le switchover "
+                    f"({response.status_code}) : {response.text[:1000]}"
+                )
+
+            return {
+                "success": True,
+                "http_status": response.status_code,
+                "message": response.text,
+            }
+
+        except requests.exceptions.RequestException as error:
+            raise RuntimeError(
+                f"Impossible de demander le switchover à Patroni : {error}"
+            ) from error
+
     @staticmethod
     def _unavailable_result(message):
         """
