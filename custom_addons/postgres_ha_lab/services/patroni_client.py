@@ -54,33 +54,47 @@ class PatroniClient:
         """
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
-
+    
     def get_status(self):
         """
-        Interroge l'endpoint /patroni.
+        Récupère l'état du nœud auprès de l'API REST Patroni.
 
-        Retourne un dictionnaire contenant les informations du serveur.
+        IMPORTANT :
+        Patroni retourne les informations d'identification du membre
+        dans l'objet imbriqué "patroni".
 
-        En cas d'erreur réseau, retourne un résultat indiquant que le
-        serveur est indisponible plutôt que de bloquer toute la découverte.
+        Exemple de réponse :
+        {
+            "state": "running",
+            "role": "master",
+            "patroni": {
+                "version": "3.2.0",
+                "scope": "mycluster",
+                "name": "pg2"
+            }
+        }
         """
-
-        endpoint = f"{self.base_url}/patroni"
-
         try:
             response = requests.get(
-                endpoint,
-                timeout=self.timeout,
-                headers={"Accept": "application/json"},
+                f"{self.base_url}/patroni",
+                timeout=self.timeout
             )
 
             response.raise_for_status()
-
             data = response.json()
+
+            # Les métadonnées Patroni sont imbriquées dans la réponse.
+            patroni_metadata = data.get("patroni") or {}
+
+            # Compatibilité : on accepte aussi un éventuel nom à la racine.
+            node_name = (
+                data.get("name")
+                or patroni_metadata.get("name")
+            )
 
             return {
                 "available": True,
-                "name": data.get("name"),
+                "name": node_name,
                 "role": data.get("role", "unknown"),
                 "state": data.get("state", "unknown"),
                 "server_version": data.get("server_version"),
@@ -90,29 +104,89 @@ class PatroniClient:
                 "error": False,
             }
 
-        except requests.exceptions.Timeout:
-            _logger.warning(
-                "Délai dépassé lors de la communication avec Patroni : %s",
+        except requests.exceptions.Timeout as exc:
+            error = f"Timeout API Patroni : {exc}"
+
+        except requests.exceptions.ConnectionError as exc:
+            error = f"Connexion API Patroni impossible : {exc}"
+
+        except requests.exceptions.RequestException as exc:
+            error = f"Erreur HTTP Patroni : {exc}"
+
+        except ValueError as exc:
+            error = f"Réponse JSON Patroni invalide : {exc}"
+
+        return {
+            "available": False,
+            "name": None,
+            "role": "unknown",
+            "state": "unknown",
+            "server_version": None,
+            "timeline": None,
+            "pending_restart": False,
+            "raw": {},
+            "error": error,
+        }
+
+    def switchover(self, leader_name, candidate_name):
+        """
+        Demande à Patroni un switchover contrôlé.
+
+        Le switchover transfère le rôle de Leader vers un Replica choisi.
+        Contrairement à un arrêt brutal du conteneur, cette opération
+        permet à Patroni d'organiser proprement la transition.
+
+        Args:
+            leader_name: Nom Patroni du Leader actuel (ex: pg1).
+            candidate_name: Nom Patroni du Replica candidat (ex: pg2).
+
+        Returns:
+            dict: Résultat HTTP de la demande.
+
+        Raises:
+            RuntimeError: Si Patroni refuse ou ne reçoit pas la demande.
+        """
+        import os
+
+        endpoint = f"{self.base_url}/switchover"
+
+        # L'authentification est facultative. Elle doit être activée
+        # si l'API REST Patroni est protégée par HTTP Basic Auth.
+        username = os.environ.get("HA_PATRONI_USERNAME")
+        password = os.environ.get("HA_PATRONI_PASSWORD")
+
+        auth = (username, password) if username and password else None
+
+        payload = {
+            "leader": leader_name,
+            "candidate": candidate_name,
+        }
+
+        try:
+            response = requests.post(
                 endpoint,
+                json=payload,
+                timeout=10,
+                auth=auth,
+                headers={"Accept": "application/json"},
             )
 
-            return self._unavailable_result("Délai de connexion dépassé")
+            if not response.ok:
+                raise RuntimeError(
+                    f"Patroni a refusé le switchover "
+                    f"({response.status_code}) : {response.text[:1000]}"
+                )
 
-        except requests.exceptions.ConnectionError:
-            _logger.warning(
-                "Impossible de joindre le serveur Patroni : %s",
-                endpoint,
-            )
+            return {
+                "success": True,
+                "http_status": response.status_code,
+                "message": response.text,
+            }
 
-            return self._unavailable_result("Serveur inaccessible")
-
-        except (requests.exceptions.RequestException, ValueError) as error:
-            _logger.exception(
-                "Erreur pendant l'interrogation de Patroni : %s",
-                endpoint,
-            )
-
-            return self._unavailable_result(str(error))
+        except requests.exceptions.RequestException as error:
+            raise RuntimeError(
+                f"Impossible de demander le switchover à Patroni : {error}"
+            ) from error
 
     @staticmethod
     def _unavailable_result(message):

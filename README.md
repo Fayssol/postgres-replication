@@ -326,3 +326,8 @@ L'intégration de Pgpool-II ajoute un point d'accès intelligent devant les troi
                            |
                       Cluster etcd
                    Gestion du consensus
+
+## cmd check : 
+```
+SELECT execution_token, test_name, created_at FROM ha_lab.replication_probe ORDER BY created_at DESC LIMIT 10;                   
+```

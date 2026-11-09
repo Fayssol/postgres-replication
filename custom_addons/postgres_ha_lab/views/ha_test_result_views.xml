@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Liste des résultats -->
+    <record id="view_postgres_ha_test_result_list" model="ir.ui.view">
+        <field name="name">postgres.ha.test.result.list</field>
+        <field name="model">postgres.ha.test.result</field>
+        <field name="arch" type="xml">
+            <list string="Historique des tests">
+                <field name="name"/>
+                <field name="test_id"/>
+                <field name="execution_date"/>
+                <field name="status" widget="badge"
+                       decoration-success="status == 'success'"
+                       decoration-danger="status in ('failed', 'error')"
+                       decoration-warning="status in ('pending', 'running')"/>
+                <field name="duration"/>
+                <field name="leader_before"/>
+                <field name="leader_after"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Formulaire d'un résultat -->
+    <record id="view_postgres_ha_test_result_form" model="ir.ui.view">
+        <field name="name">postgres.ha.test.result.form</field>
+        <field name="model">postgres.ha.test.result</field>
+        <field name="arch" type="xml">
+            <form string="Résultat du test">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="test_id"/>
+                            <field name="execution_date"/>
+                            <field name="duration"/>
+                        </group>
+                        <group>
+                            <field name="status" widget="badge"/>
+                            <field name="leader_before"/>
+                            <field name="leader_after"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Détails techniques">
+                            <field name="details"/>
+                        </page>
+                        <page string="Erreurs">
+                            <field name="error_message"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action de l'historique -->
+    <record id="action_postgres_ha_test_results" model="ir.actions.act_window">
+        <field name="name">Historique des tests</field>
+        <field name="res_model">postgres.ha.test.result</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

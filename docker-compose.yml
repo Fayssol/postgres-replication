@@ -215,6 +215,17 @@ services:
       HA_DOCKER_API_URL: http://docker-socket-proxy:2375
       HA_DOCKER_NETWORK: pnet
       HA_DOCKER_LABEL: ha.manager=postgres-ha-lab
+       # Identifiants utilisés temporairement pour les tests PostgreSQL HA.
+      HA_POSTGRES_USER: ${HA_POSTGRES_USER}
+      HA_POSTGRES_PASSWORD: ${HA_POSTGRES_PASSWORD}
+      HA_POSTGRES_DB: ${HA_POSTGRES_DB}
+      HA_POSTGRES_PORT: ${HA_POSTGRES_PORT}
+
+      # Noms DNS des trois services Patroni sur le réseau pnet.
+      HA_POSTGRES_NODES: patroni1,patroni2,patroni3
+
+      # Délai maximal d'attente d'une connexion PostgreSQL.
+      HA_POSTGRES_CONNECT_TIMEOUT: 5
     volumes:
       - odoo-web-data:/var/lib/odoo
       - ./custom_addons:/mnt/extra-addons

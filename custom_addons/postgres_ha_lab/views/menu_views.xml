@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
+    <!-- Menu principal du gestionnaire PostgreSQL HA -->
     <menuitem
         id="menu_postgres_ha_root"
         name="PostgreSQL HA Manager"
@@ -8,12 +9,33 @@
         groups="base.group_system"
     />
 
+    <!-- Gestion des nœuds du cluster -->
     <menuitem
         id="menu_postgres_ha_nodes"
         name="Nœuds du cluster"
         parent="menu_postgres_ha_root"
         action="action_postgres_ha_nodes"
         sequence="10"
+        groups="base.group_system"
+    />
+
+    <!-- Gestion des scénarios de tests -->
+    <menuitem
+        id="menu_postgres_ha_tests"
+        name="Scénarios de tests"
+        parent="menu_postgres_ha_root"
+        action="action_postgres_ha_tests"
+        sequence="20"
+        groups="base.group_system"
+    />
+
+    <!-- Historique des exécutions -->
+    <menuitem
+        id="menu_postgres_ha_test_results"
+        name="Historique des tests"
+        parent="menu_postgres_ha_root"
+        action="action_postgres_ha_test_results"
+        sequence="30"
         groups="base.group_system"
     />
 
